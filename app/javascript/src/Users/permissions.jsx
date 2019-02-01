@@ -263,6 +263,7 @@ export function render ({el, state = initialState, services = [], features = []}
 
   function dispatch (newState = {}) {
     state = Object.assign({}, state, newState)
+    console.log('State: ', state)
 
     if (!rendering) {
       rendering = true

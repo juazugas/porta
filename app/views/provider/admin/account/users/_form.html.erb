@@ -56,12 +56,11 @@
         <% end %>
         <script>
           document.addEventListener('DOMContentLoaded', function () {
-            renderPermissionsWidget({
-              el: document.getElementById('user-permissions-widget'),
-              state: <%= json @user.as_json(root: false, only: [:role], methods: [:admin_sections, :member_permission_service_ids]) %>,
+            PermissionsForm({
+              initialState: <%= json @user.as_json(root: false, only: [:role], methods: [:admin_sections, :member_permission_service_ids]) %>,
               services: <%= json @services.as_json(root: false, only: [:id, :name, :description]) %>,
               features: <%= json AdminSection.permissions %>
-            })
+            }, 'user-permissions-widget')
           })
         </script>
     <%- end -%>
