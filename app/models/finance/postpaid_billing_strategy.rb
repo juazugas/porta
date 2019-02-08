@@ -35,13 +35,18 @@ class Finance::PostpaidBillingStrategy < Finance::BillingStrategy
   end
 
   def bill_plan_change(contract, period)
-    if contract.paid_until.to_date < period.begin.to_date
-      add_plan_cost(:bill, contract, contract.plan, period)
-    else
-      # FIXME: replace end_of_month by paid until!
-      add_plan_cost(:refund, contract, contract.old_plan, period)
-      add_plan_cost(:bill, contract, contract.plan, period)
+    paid_until = contract.paid_until.utc
+    period_begin = period.begin.utc
+    period_end = period.end.utc
+
+    unless paid_until.to_date < period_begin.to_date
+      old_plan = contract.old_plan
+      entire_period = TimeRange.new(paid_until, period_end) # This can possibly cross several months
+      bill_possibly_long_period(contract, old_plan, entire_period)
+      add_plan_cost(:refund, contract, old_plan, period)
     end
+
+    add_plan_cost(:bill, contract, contract.plan, period)
   end
 
   # Differs from Postpaid #bill_variable_costs just by the invoice
@@ -60,4 +65,20 @@ class Finance::PostpaidBillingStrategy < Finance::BillingStrategy
     account.buyer_invoices.by_buyer(buyer).before(now).opened
   end
 
+  def bill_possibly_long_period(contract, plan, period)
+    for_every_month_within(period) do |month|
+      add_plan_cost(:bill, contract, plan, month)
+    end
+  end
+
+  def for_every_month_within(period)
+    dates = (period.begin.to_date..period.end.to_date).to_a
+    dates.uniq { |date| [date.year, date.month] }.each do |first_date_of_month|
+      beginning_of_month = first_date_of_month.to_time(:utc)
+      beginning_of_period = [beginning_of_month, period.begin].max
+      end_of_period = [beginning_of_month.end_of_month, period.end].min
+
+      yield TimeRange.new(beginning_of_period, end_of_period)
+    end
+  end
 end

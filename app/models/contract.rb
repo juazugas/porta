@@ -326,7 +326,7 @@ class Contract < ApplicationRecord
     from = [ period.begin.to_date, paid_end ].max.to_date
     to = [ period.end.to_date, from ].max.to_date
 
-    from.to_time..to.to_time.end_of_day
+    from.to_time(:utc)..to.to_time(:utc).end_of_day
   end
 
 end
