@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190104134224) do
+ActiveRecord::Schema.define(version: 20190212111202) do
 
   create_table "access_tokens", force: :cascade do |t|
     t.integer "owner_id",   limit: 8,                      null: false
@@ -933,6 +933,14 @@ ActiveRecord::Schema.define(version: 20190104134224) do
   add_index "plans", ["cost_per_month", "setup_fee"], name: "index_plans_on_cost_per_month_and_setup_fee", using: :btree
   add_index "plans", ["issuer_id", "issuer_type", "type", "original_id"], name: "idx_plans_issuer_type_original", using: :btree
   add_index "plans", ["issuer_id"], name: "fk_contracts_service_id", using: :btree
+
+  create_table "policies", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.string   "version",    limit: 255
+    t.binary   "schema",     limit: 4294967295
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "posts", force: :cascade do |t|
     t.integer  "user_id",        limit: 8
